@@ -29,4 +29,5 @@ backend/.env
 *.sw?
 
 # Terraform
-./terraform
+.terraform/
+.terraform.lock.hcl
