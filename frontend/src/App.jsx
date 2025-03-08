@@ -1,16 +1,24 @@
-import { useState } from 'react'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
 
 function App() {
-  const [location, setLocation] = useState('')
-  const [openWeatherTemp, setOpenWeatherTemp] = useState(null)
-  const [weatherApiTemp, setWeatherApiTemp] = useState(null)
+  const [location, setLocation] = useState('');
+  const [openWeatherTemp, setOpenWeatherTemp] = useState(null);
+  const [weatherApiTemp, setWeatherApiTemp] = useState(null);
+  const [averageTemp, setAverageTemp] = useState(null);
+  const [tempDifference, setTempDifference] = useState(null);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    // This will be implemented later when backend is ready
-    console.log('Location submitted:', location)
-  }
+    e.preventDefault();
+    // Simulated API call response for now
+    const openWeatherResponse = 12; // Example value
+    const weatherApiResponse = 14;  // Example value
+
+    setOpenWeatherTemp(openWeatherResponse);
+    setWeatherApiTemp(weatherApiResponse);
+    setAverageTemp(((openWeatherResponse + weatherApiResponse) / 2).toFixed(1));
+    setTempDifference(Math.abs(openWeatherResponse - weatherApiResponse));
+  };
 
   return (
     <div className="container">
@@ -29,23 +37,17 @@ function App() {
         </button>
       </div>
 
-      <div className="temperature-boxes">
-        <div className="temp-box">
-          <h2>OpenWeatherAPI</h2>
-          <div className="temperature">
-            {openWeatherTemp !== null ? `${openWeatherTemp}°C` : '-'}
-          </div>
+      {openWeatherTemp !== null && weatherApiTemp !== null && (
+        <div className="results">
+          <h2>Weather Comparison for: {location}</h2>
+          <p><strong>OpenWeatherMap Temperature:</strong> {openWeatherTemp}°C</p>
+          <p><strong>WeatherAPI Temperature:</strong> {weatherApiTemp}°C</p>
+          <p><strong>Temperature Difference:</strong> {tempDifference}°C</p>
+          <p><strong>Average Temperature:</strong> {averageTemp}°C</p>
         </div>
-
-        <div className="temp-box">
-          <h2>WeatherAPI</h2>
-          <div className="temperature">
-            {weatherApiTemp !== null ? `${weatherApiTemp}°C` : '-'}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
