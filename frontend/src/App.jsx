@@ -1,39 +1,50 @@
 import { useState } from 'react'
-import uniLogo from './assets/logo.png'
-import moodleLogo from './assets/moodle.jpeg'
-/* import apicommsServices from './services/apicomms' */
-/* import Component_name from './components/component_name' */
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [location, setLocation] = useState('')
+  const [openWeatherTemp, setOpenWeatherTemp] = useState(null)
+  const [weatherApiTemp, setWeatherApiTemp] = useState(null)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    // This will be implemented later when backend is ready
+    console.log('Location submitted:', location)
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://www.jyu.fi/fi" target="_blank">
-          <img src={uniLogo} className="logo" alt="jyu logo" />
-        </a>
-        <a href="https://moodle.jyu.fi" target="_blank">
-          <img src={moodleLogo} className="logo moodle" alt="Moodle logo" />
-        </a>
-      </div>
-      <h1>This is a template for the project</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="container">
+      <h1>Weather API Comparison</h1>
+      
+      <div className="search-section">
+        <input
+          type="text"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder="Enter location..."
+          className="location-input"
+        />
+        <button onClick={handleSubmit} className="submit-button">
+          Get Weather
         </button>
-        <p>
-          Code for webpage is in <code>src/App.jsx</code>.
-        </p>
-        <p>
-          Code for API communication should be in<code>src/services/apicomms.js</code>.
-        </p>
-        <p>
-          Code for handling fetched data should be in <code>src/components/component_name.jsx</code>.
-        </p>
       </div>
-    </>
+
+      <div className="temperature-boxes">
+        <div className="temp-box">
+          <h2>OpenWeatherAPI</h2>
+          <div className="temperature">
+            {openWeatherTemp !== null ? `${openWeatherTemp}°C` : '-'}
+          </div>
+        </div>
+
+        <div className="temp-box">
+          <h2>WeatherAPI</h2>
+          <div className="temperature">
+            {weatherApiTemp !== null ? `${weatherApiTemp}°C` : '-'}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
