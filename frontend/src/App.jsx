@@ -10,9 +10,18 @@ function App() {
   const [weatherApiTemp, setWeatherApiTemp] = useState(null);
   const [averageTemp, setAverageTemp] = useState(null);
   const [tempDifference, setTempDifference] = useState(null);
-
+  const [error, setError] = useState("");
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!location) {
+      setError("Location is required");
+      return;
+    }
+
+    setError(""); //Deletes error message, if input is given
+
     // Simulated API call response for now
     const openWeatherResponse = 12; // Example value
     const weatherApiResponse = 14;  // Example value
@@ -38,6 +47,7 @@ function App() {
         <button onClick={handleSubmit} className="submit-button">
           Get Weather
         </button>
+          {error && <p className="error-message">{error}</p>}
       </div>
 
       {openWeatherTemp !== null && weatherApiTemp !== null && (
