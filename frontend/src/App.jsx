@@ -14,22 +14,39 @@ function App() {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!location) {
       setError("Location is required");
       return;
     }
-
-    setError(""); //Deletes error message, if input is given
-
-    // Simulated API call response for now
-    const openWeatherResponse = 12; // Example value
-    const weatherApiResponse = 14;  // Example value
-
-    setOpenWeatherTemp(openWeatherResponse);
-    setWeatherApiTemp(weatherApiResponse);
-    setAverageTemp(((openWeatherResponse + weatherApiResponse) / 2).toFixed(1));
-    setTempDifference(Math.abs(openWeatherResponse - weatherApiResponse));
+  
+    setError(""); // Deletes error message if input is given
+  
+    try {
+      const response = await fetch("http://localhost:5000/temperature", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ location }),
+      });
+  
+      if (!response.ok) {
+        // If response is not OK, try to extract error message from backend
+        const errorData = await response.json().catch(() => ({})); // Prevents JSON parse error
+        setError(errorData.error || "Failed to fetch temperature data");
+        return;
+      }
+  
+      const data = await response.json();
+  
+      setOpenWeatherTemp(data.openweather_temp);
+      setWeatherApiTemp(data.weatherapi_temp);
+      setAverageTemp(((data.openweather_temp + data.weatherapi_temp) / 2).toFixed(1));
+      setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp));
+    } catch (error) {
+      setError("Error fetching data. Please try again.");
+    }
   };
 
   return (
