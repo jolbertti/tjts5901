@@ -59,9 +59,24 @@ test("triggers weather fetch on button click", () => {
     // Button
     const buttonElement = screen.getByText("Get Weather");
   
-    // User clicks button without input
+    // Clicking the button without input
     fireEvent.click(buttonElement);
   
     // Checks that the error message is displayed
     expect(await screen.findByText(/Location is required/)).toBeInTheDocument();
+  });
+
+  test("shows error if the entered location is not found", async () => {
+    render(<App />);
+  
+    // Enter an unknown city
+    const inputElement = screen.getByPlaceholderText("Enter location...");
+    fireEvent.change(inputElement, { target: { value: "UnknownCity123" } });
+  
+    // Click the button
+    const buttonElement = screen.getByText("Get Weather");
+    fireEvent.click(buttonElement);
+  
+    // Wait for the error message to appear
+    expect(await screen.findByText(/Location not found/)).toBeInTheDocument();
   });
