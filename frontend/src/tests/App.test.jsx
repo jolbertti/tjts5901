@@ -1,6 +1,19 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import App from "../App";
+
+// Mocking the fetch API call
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        location: "London",
+        openweather_temp: 12,
+        weatherapi_temp: 14,
+      }),
+  })
+);
 
 test("allows user to enter location", () => {
   render(<App />);
@@ -32,6 +45,56 @@ test("triggers weather fetch on button click", () => {
     const resultText = screen.getByText(/Weather Comparison for:/);
     expect(resultText).toBeInTheDocument();
   });
+
+  test("fetches and displays weather data from backend", async () => {
+    render(<App />);
+  
+    // Enter a city name into the input field
+    const inputElement = screen.getByPlaceholderText("Enter location...");
+    fireEvent.change(inputElement, { target: { value: "London" } });
+  
+    // Click the fetch button
+    const buttonElement = screen.getByText("Get Weather");
+    fireEvent.click(buttonElement);
+  
+    // Wait for the API response and check if data is displayed correctly
+    await waitFor(() =>
+      expect(screen.getByText("Weather Comparison for: London")).toBeInTheDocument()
+    );
+    expect(screen.getByText("OpenWeatherMap Temperature: 12°C")).toBeInTheDocument();
+    expect(screen.getByText("WeatherAPI Temperature: 14°C")).toBeInTheDocument();
+  });
+
+  test("calculates the correct average temperature", async () => {
+    render(<App />);
+  
+    // Enter city in search field
+    const inputElement = screen.getByPlaceholderText("Enter location...");
+    fireEvent.change(inputElement, { target: { value: "London" } });
+  
+    // Click button
+    const buttonElement = screen.getByText("Get Weather");
+    fireEvent.click(buttonElement);
+  
+    // Wait for avarage tempature to display on display
+    expect(await screen.findByText(/Average Temperature: 13°C/)).toBeInTheDocument();
+  });
+  
+  test("calculates the correct temperature difference", async () => {
+    render(<App />);
+  
+    // Enter city in search field
+    const inputElement = screen.getByPlaceholderText("Enter location...");
+    fireEvent.change(inputElement, { target: { value: "London" } });
+  
+    // Click button
+    const buttonElement = screen.getByText("Get Weather");
+    fireEvent.click(buttonElement);
+  
+    // Wait for temperaature diffrence to show on display
+    expect(await screen.findByText(/Temperature Difference: 2°C/)).toBeInTheDocument();
+  });
+  
 
   test("displays temperature results after clicking button", async () => {
     render(<App />);
