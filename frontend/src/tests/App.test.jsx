@@ -1,17 +1,34 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import App from "../App";
 
-
-
-test("renders the input field and button", () => {
+test("allows user to enter location", () => {
   render(<App />);
-  
-  // Verify that the input field is rendered
+
+  // Find the input field
   const inputElement = screen.getByPlaceholderText("Enter location...");
-  expect(inputElement).toBeInTheDocument();
-  
-  // Verify that the button is rendered
-  const buttonElement = screen.getByText("Get Weather");
-  expect(buttonElement).toBeInTheDocument();
+
+  // Simulate user typing "London"
+  fireEvent.change(inputElement, { target: { value: "London" } });
+
+  // Check that the input field contains "London"
+  expect(inputElement.value).toBe("London");
 });
+
+test("triggers weather fetch on button click", () => {
+    render(<App />);
+  
+    // Find input field and button
+    const inputElement = screen.getByPlaceholderText("Enter location...");
+    const buttonElement = screen.getByText("Get Weather");
+  
+    // Simulate user typing
+    fireEvent.change(inputElement, { target: { value: "London" } });
+  
+    // Simulate button click
+    fireEvent.click(buttonElement);
+  
+    // Check if the expected output appears
+    const resultText = screen.getByText(/Weather Comparison for:/);
+    expect(resultText).toBeInTheDocument();
+  });
