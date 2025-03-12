@@ -1,40 +1,83 @@
-import { useState } from 'react'
-import uniLogo from './assets/logo.png'
-import moodleLogo from './assets/moodle.jpeg'
-/* import apicommsServices from './services/apicomms' */
-/* import Component_name from './components/component_name' */
-import './App.css'
+import React from "react";
+import { useState } from 'react';
+import './App.css';
+
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [location, setLocation] = useState('');
+  const [openWeatherTemp, setOpenWeatherTemp] = useState(null);
+  const [weatherApiTemp, setWeatherApiTemp] = useState(null);
+  const [averageTemp, setAverageTemp] = useState(null);
+  const [tempDifference, setTempDifference] = useState(null);
+  const [error, setError] = useState("");
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    if (!location) {
+      setError("Location is required");
+      return;
+    }
+  
+    setError(""); // Deletes error message if input is given
+  
+    try {
+      const response = await fetch("http://localhost:5000/temperature", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ location }),
+      });
+  
+      if (!response.ok) {
+        // If response is not OK, try to extract error message from backend
+        const errorData = await response.json().catch(() => ({})); // Prevents JSON parse error
+        setError(errorData.error || "Failed to fetch temperature data");
+        return;
+      }
+  
+      const data = await response.json();
+  
+      setOpenWeatherTemp(data.openweather_temp);
+      setWeatherApiTemp(data.weatherapi_temp);
+      setAverageTemp(((data.openweather_temp + data.weatherapi_temp) / 2).toFixed(1));
+      setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp));
+    } catch (error) {
+      setError("Error fetching data. Please try again.");
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://www.jyu.fi/fi" target="_blank">
-          <img src={uniLogo} className="logo" alt="jyu logo" />
-        </a>
-        <a href="https://moodle.jyu.fi" target="_blank">
-          <img src={moodleLogo} className="logo moodle" alt="Moodle logo" />
-        </a>
-      </div>
-      <h1>This is a template for the project</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="container">
+      <h1>Weather API Comparison</h1>
+      
+      <div className="search-section">
+        <input
+          type="text"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder="Enter location..."
+          className="location-input"
+        />
+        <button onClick={handleSubmit} className="submit-button">
+          Get Weather
         </button>
-        <p>
-          Code for webpage is in <code>src/App.jsx</code>.
-        </p>
-        <p>
-          Code for API communication should be in<code>src/services/apicomms.js</code>.
-        </p>
-        <p>
-          Code for handling fetched data should be in <code>src/components/component_name.jsx</code>.
-        </p>
+          {error && <p className="error-message">{error}</p>}
       </div>
-    </>
-  )
+
+      {openWeatherTemp !== null && weatherApiTemp !== null && (
+        <div className="results">
+          <h2>Weather Comparison for: {location}</h2>
+          <p><strong>OpenWeatherMap Temperature:</strong> {openWeatherTemp}°C</p>
+          <p><strong>WeatherAPI Temperature:</strong> {weatherApiTemp}°C</p>
+          <p><strong>Temperature Difference:</strong> {tempDifference}°C</p>
+          <p><strong>Average Temperature:</strong> {averageTemp}°C</p>
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
