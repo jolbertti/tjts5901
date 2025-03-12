@@ -23,13 +23,7 @@ function App() {
     setError(""); // Deletes error message if input is given
   
     try {
-      const response = await fetch("http://localhost:5000/temperature", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ location }),
-      });
+      const response = await fetch(`http://localhost:5000/temperature?city=${location}`);
   
       if (!response.ok) {
         // If response is not OK, try to extract error message from backend

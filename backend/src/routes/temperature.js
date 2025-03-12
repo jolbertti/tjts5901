@@ -1,33 +1,22 @@
-
-// const { getOpenWeatherTemp, getWeatherApiTemp } = require("../services/weatherService"); 
-// Uncomment this when implementing actual API calls.
-
 const express = require("express");
+const { getOpenWeatherTemp, getWeatherApiTemp } = require("../services/weatherService");
+
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-    console.log("🔥 GET /temperature called");
-    res.json({
-        message: "Temperature API is working!",
-        openweather_temp: 12,
-        weatherapi_temp: 14
-    });
-});
+    try {
+        const city = req.query.city;
+        if (!city) return res.status(400).json({ error: "City parameter is required" });
 
-// ✅ Adding POST route to ensure tests pass!
-router.post("/", async (req, res) => {
-    const { location } = req.body;
+        const [temp1, temp2] = await Promise.all([
+            getOpenWeatherTemp(city),
+            getWeatherApiTemp(city),
+        ]);
 
-    if (!location) {
-        return res.status(400).json({ error: "Location is required" });
+        res.json({ city, openweather_temp: temp1, weatherapi_temp: temp2 });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch temperature data" });
     }
-
-    res.json({
-        location,
-        openweather_temp: 12, // Placeholder data, will be replaced with actual API response
-        weatherapi_temp: 14
-    });
 });
 
 module.exports = router;
-
