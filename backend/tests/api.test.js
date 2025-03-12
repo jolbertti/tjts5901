@@ -1,26 +1,51 @@
 const request = require("supertest");
 const express = require("express");
-const temperatureRoutes = require("../src/routes/temperature");
+const temperatureRoutes = require("../src/routes/temperature"); // Adjust the path if needed
+const { getOpenWeatherTemp, getWeatherApiTemp } = require("../src/services/weatherService");
+
+// Mock the external API functions
+jest.mock("../src/services/weatherService");
 
 const app = express();
-app.use(express.json());
-app.use("/temperature", temperatureRoutes);
+app.use("/temperature", temperatureRoutes);  // Use the router
 
-describe("Temperature API", () => {
-    test("POST /temperature should return temperature data", async () => {
-        const response = await request(app)
-            .post("/temperature")
-            .send({ location: "London" });
+describe("GET /temperature", () => {
+  it("should return temperature data for a valid city", async () => {
+    const city = "Helsinki";
+    // Mock the API responses
+    getOpenWeatherTemp.mockResolvedValue(10); // OpenWeather temp mock
+    getWeatherApiTemp.mockResolvedValue(12); // WeatherAPI temp mock
 
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty("location", "London");
-        expect(response.body).toHaveProperty("openweather_temp");
-        expect(response.body).toHaveProperty("weatherapi_temp");
+    const response = await request(app).get(`/temperature?city=${city}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      city,
+      openweather_temp: 10,
+      weatherapi_temp: 12
     });
+  });
 
-    test("POST /temperature without location should return error", async () => {
-        const response = await request(app).post("/temperature").send({});
-        expect(response.status).toBe(400);
-        expect(response.body).toEqual({ error: "Location is required" });
+  it("should return 400 if the city parameter is missing", async () => {
+    const response = await request(app).get("/temperature");
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: "City parameter is required"
     });
+  });
+
+  it("should return 500 if an error occurs while fetching data", async () => {
+    const city = "Helsinki";
+    // Mock the API responses to simulate an error
+    getOpenWeatherTemp.mockRejectedValue(new Error("API Error"));
+    getWeatherApiTemp.mockRejectedValue(new Error("API Error"));
+
+    const response = await request(app).get(`/temperature?city=${city}`);
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      error: "Failed to fetch temperature data"
+    });
+  });
 });
