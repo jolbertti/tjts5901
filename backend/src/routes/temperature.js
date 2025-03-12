@@ -3,6 +3,10 @@ const { getOpenWeatherTemp, getWeatherApiTemp } = require("../services/weatherSe
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {});
+router.get("/", async (req, res) => {
+
+
+    
+});
 
 module.exports = router;
