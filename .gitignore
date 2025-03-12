@@ -27,3 +27,7 @@ backend/.env
 *.njsproj
 *.sln
 *.sw?
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
