@@ -34,10 +34,10 @@ function App() {
   
       const data = await response.json();
   
-      setOpenWeatherTemp(data.openweather_temp);
-      setWeatherApiTemp(data.weatherapi_temp);
+      setOpenWeatherTemp(data.openweather_temp.toFixed(1));
+      setWeatherApiTemp(data.weatherapi_temp.toFixed(1));
       setAverageTemp(((data.openweather_temp + data.weatherapi_temp) / 2).toFixed(1));
-      setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp));
+      setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp).toFixed(1));
     } catch (error) {
       setError("Error fetching data. Please try again.");
     }
