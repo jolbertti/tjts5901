@@ -3,15 +3,15 @@ import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import App from "../App";
 
 // Mocking the fetch API call
-global.fetch = jest.fn(() =>
+global.fetch = jest.fn((url) =>
   Promise.resolve({
-    ok: true,
+    ok: url.includes("UnknownCity123") ? false : true, // Simuloi virheen tuntemattomalle kaupungille
     json: () =>
-      Promise.resolve({
-        location: "London",
-        openweather_temp: 12.0,
-        weatherapi_temp: 14.0,
-      }),
+      Promise.resolve(
+        url.includes("UnknownCity123")
+          ? { error: "Location not found" }
+          : { location: "London", openweather_temp: "12.0", weatherapi_temp: "14.0" }
+      ),
   })
 );
 
@@ -133,5 +133,6 @@ test("shows error if the entered location is not found", async () => {
     fireEvent.click(buttonElement);
   });
 
-  expect(await screen.findByText(/Location not found/)).toBeInTheDocument();
+  expect(await screen.findByText(new RegExp(`Nothing found for city "${"UnknownCity123"}", please check the spelling`))).toBeInTheDocument();
+
 });

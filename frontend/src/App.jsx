@@ -28,7 +28,7 @@ function App() {
       if (!response.ok) {
         // If response is not OK, try to extract error message from backend
         const errorData = await response.json().catch(() => ({})); // Prevents JSON parse error
-        setError(errorData.error || "Failed to fetch temperature data");
+        setError(`Nothing found for city "${location}", please check the spelling`);
         return;
       }
   
