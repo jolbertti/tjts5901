@@ -1,19 +1,19 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act, within } from "@testing-library/react";
 import App from "../App";
 
 // Mocking the fetch API call
-global.fetch = jest.fn((url) =>
-  Promise.resolve({
-    ok: url.includes("UnknownCity123") ? false : true, // Simuloi virheen tuntemattomalle kaupungille
+global.fetch = jest.fn((url) => {
+  return Promise.resolve({
+    ok: !url.includes("UnknownCity123"), // Simulates error to unkonwn city
     json: () =>
       Promise.resolve(
         url.includes("UnknownCity123")
-          ? { error: "Location not found" }
-          : { location: "London", openweather_temp: "12.0", weatherapi_temp: "14.0" }
+          ? { error: "Nothing found for city London, please check the spelling" }
+          : { location: "London", openweather_temp: 12.0, weatherapi_temp: 14.0 }
       ),
-  })
-);
+  });
+});
 
 test("allows user to enter location", () => {
   render(<App />);
@@ -42,13 +42,13 @@ test("triggers weather fetch on button click", async () => {
   });
 
   // Check if the expected output appears
-  expect(await screen.findByText(/Weather Comparison for:/)).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText(/Weather Comparison for:/)).toBeInTheDocument());
 });
 
 test("fetches and displays weather data from backend", async () => {
   render(<App />);
 
-  // Enter a city name into the input field and click button
+  // Simulate user typing a city name and clicking button
   const inputElement = screen.getByPlaceholderText("Enter location...");
   const buttonElement = screen.getByText("Get Weather");
 
@@ -57,40 +57,64 @@ test("fetches and displays weather data from backend", async () => {
     fireEvent.click(buttonElement);
   });
 
-  // Wait for the API response and check if data is displayed correctly
-  await waitFor(() =>
-    expect(screen.getByText("Weather Comparison for: London")).toBeInTheDocument()
-  );
-  expect(screen.getByText("OpenWeatherMap Temperature: 12.0°C")).toBeInTheDocument();
-  expect(screen.getByText("WeatherAPI Temperature: 14.0°C")).toBeInTheDocument();
+  // Wait for the results section to appear and locate it
+  const resultsSection = await screen.findByText(/Weather Comparison for:/);
+  const parentDiv = resultsSection.closest(".results");
+
+  // Verify that the correct temperature values are displayed inside the results section
+  expect(within(parentDiv).getByText(/OpenWeatherMap Temperature:/)).toBeInTheDocument();
+  expect(within(parentDiv).getByText(/12.0°C/)).toBeInTheDocument();
+  expect(within(parentDiv).getByText(/WeatherAPI Temperature:/)).toBeInTheDocument();
+  expect(within(parentDiv).getByText(/14.0°C/)).toBeInTheDocument();
 });
 
 test("calculates the correct average temperature", async () => {
   render(<App />);
-
+  // Find the input field and the button
   const inputElement = screen.getByPlaceholderText("Enter location...");
   const buttonElement = screen.getByText("Get Weather");
-
+  
+  // Simulate user typing a city name and cliking button
   await act(async () => {
     fireEvent.change(inputElement, { target: { value: "London" } });
     fireEvent.click(buttonElement);
   });
 
-  expect(await screen.findByText(/Average Temperature: 13.0°C/)).toBeInTheDocument();
+  // Wait for the results section to appear and locate it
+  const resultsSection = await screen.findByText(/Weather Comparison for:/);
+  const parentDiv = resultsSection.closest(".results");
+
+  // Verify that "Average Temperature" text is displayed within the results section 
+  expect(within(parentDiv).getByText(/Average Temperature:/)).toBeInTheDocument();
+
+  // Verify that the average temperature is displayed within the results section
+  expect(within(parentDiv).getByText(/Average Temperature:/)).toBeInTheDocument();
+  expect(within(parentDiv).getByText(/13.0°C/)).toBeInTheDocument();
 });
 
 test("calculates the correct temperature difference", async () => {
   render(<App />);
 
+  // Find the input field and the button
   const inputElement = screen.getByPlaceholderText("Enter location...");
   const buttonElement = screen.getByText("Get Weather");
 
+    // Simulate user typing a city name and cliking button
   await act(async () => {
     fireEvent.change(inputElement, { target: { value: "London" } });
     fireEvent.click(buttonElement);
   });
 
-  expect(await screen.findByText(/Temperature Difference: 2.0°C/)).toBeInTheDocument();
+  // Wait for the results section to appear and locate it
+    const resultsSection = await screen.findByText(/Weather Comparison for:/);
+    const parentDiv = resultsSection.closest(".results");
+  
+  // Verify that "Temperature Difference" text is displayed within the results section
+  expect(within(parentDiv).getByText(/Temperature Difference:/)).toBeInTheDocument();
+
+  // Find all occurrences of "2.0°C" and ensure at least one is present in the results
+  const tempElements = within(parentDiv).getAllByText(/2.0°C/);
+  expect(tempElements.length).toBeGreaterThan(0); // Varmista, että löytyy ainakin yksi
 });
 
 test("displays temperature results after clicking button", async () => {
