@@ -11,6 +11,15 @@ function App() {
   const [averageTemp, setAverageTemp] = useState(null);
   const [tempDifference, setTempDifference] = useState(null);
   const [error, setError] = useState("");
+
+  const handleInputChange = (e) => {
+    setLocation(e.target.value);
+    setError(""); // Clear error when user types a new location
+    setOpenWeatherTemp(null); // Clear previous results
+    setWeatherApiTemp(null);
+    setAverageTemp(null);
+    setTempDifference(null);
+  };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,16 +37,16 @@ function App() {
       if (!response.ok) {
         // If response is not OK, try to extract error message from backend
         const errorData = await response.json().catch(() => ({})); // Prevents JSON parse error
-        setError(errorData.error || "Failed to fetch temperature data");
+        setError(`Nothing found for city "${location}", please check spelling`);
         return;
       }
   
       const data = await response.json();
   
-      setOpenWeatherTemp(data.openweather_temp);
-      setWeatherApiTemp(data.weatherapi_temp);
+      setOpenWeatherTemp(data.openweather_temp.toFixed(1));
+      setWeatherApiTemp(data.weatherapi_temp.toFixed(1));
       setAverageTemp(((data.openweather_temp + data.weatherapi_temp) / 2).toFixed(1));
-      setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp));
+      setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp).toFixed(1));
     } catch (error) {
       setError("Error fetching data. Please try again.");
     }
@@ -51,15 +60,15 @@ function App() {
         <input
           type="text"
           value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          onChange={handleInputChange}
           placeholder="Enter location..."
           className="location-input"
         />
         <button onClick={handleSubmit} className="submit-button">
           Get Weather
         </button>
-          {error && <p className="error-message">{error}</p>}
       </div>
+      {error && <p className="error-message">{error}</p>}
 
       {openWeatherTemp !== null && weatherApiTemp !== null && (
         <div className="results">
