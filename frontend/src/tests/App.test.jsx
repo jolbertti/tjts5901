@@ -160,3 +160,46 @@ test("shows error if the entered location is not found", async () => {
   expect(await screen.findByText(new RegExp(`Nothing found for city "${"UnknownCity123"}", please check the spelling`))).toBeInTheDocument();
 
 });
+
+test("clears previous results when user starts typing", async () => {
+  render(<App />);
+
+  const inputElement = screen.getByPlaceholderText("Enter location...");
+  const buttonElement = screen.getByText("Get Weather");
+
+  // Simulate typing a city and fetching weather data
+  await act(async () => {
+    fireEvent.change(inputElement, { target: { value: "London" } });
+    fireEvent.click(buttonElement);
+  });
+
+  // Wait for results to appear
+  await screen.findByText(/Weather Comparison for:/);
+  expect(screen.getByText(/OpenWeatherMap Temperature:/)).toBeInTheDocument();
+
+  // Simulate typing a new city
+  fireEvent.change(inputElement, { target: { value: "New York" } });
+
+  // Ensure previous results are removed
+  expect(screen.queryByText(/Weather Comparison for:/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/OpenWeatherMap Temperature:/)).not.toBeInTheDocument();
+});
+
+test("displays error message below the input field", async () => {
+  render(<App />);
+
+  const inputElement = screen.getByPlaceholderText("Enter location...");
+  const buttonElement = screen.getByText("Get Weather");
+
+  // Click the button without entering a location
+  await act(async () => {
+    fireEvent.click(buttonElement);
+  });
+
+  // Check if the error message appears
+  const errorMessage = await screen.findByText(/Location is required/);
+  expect(errorMessage).toBeInTheDocument();
+
+  // Ensure the error message is directly below the input field
+  expect(errorMessage.compareDocumentPosition(inputElement)).toBe(4); // 4 means 'following'
+});
