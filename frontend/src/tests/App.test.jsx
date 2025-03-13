@@ -9,7 +9,7 @@ global.fetch = jest.fn((url) => {
     json: () =>
       Promise.resolve(
         url.includes("UnknownCity123")
-          ? { error: "Nothing found for city London, please check the spelling" }
+          ? { error: "Nothing found for city London, please check spelling" }
           : { location: "London", openweather_temp: 12.0, weatherapi_temp: 14.0 }
       ),
   });
@@ -157,7 +157,7 @@ test("shows error if the entered location is not found", async () => {
     fireEvent.click(buttonElement);
   });
 
-  expect(await screen.findByText(new RegExp(`Nothing found for city "${"UnknownCity123"}", please check the spelling`))).toBeInTheDocument();
+  expect(await screen.findByText(new RegExp(`Nothing found for city "${"UnknownCity123"}", please check spelling`))).toBeInTheDocument();
 
 });
 
@@ -201,5 +201,5 @@ test("displays error message below the input field", async () => {
   expect(errorMessage).toBeInTheDocument();
 
   // Ensure the error message is directly below the input field
-  expect(errorMessage.compareDocumentPosition(inputElement)).toBe(4); // 4 means 'following'
+  expect(inputElement.compareDocumentPosition(errorMessage)).toBe(4);
 });

@@ -11,6 +11,15 @@ function App() {
   const [averageTemp, setAverageTemp] = useState(null);
   const [tempDifference, setTempDifference] = useState(null);
   const [error, setError] = useState("");
+
+  const handleInputChange = (e) => {
+    setLocation(e.target.value);
+    setError(""); // Clear error when user types a new location
+    setOpenWeatherTemp(null); // Clear previous results
+    setWeatherApiTemp(null);
+    setAverageTemp(null);
+    setTempDifference(null);
+  };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +37,7 @@ function App() {
       if (!response.ok) {
         // If response is not OK, try to extract error message from backend
         const errorData = await response.json().catch(() => ({})); // Prevents JSON parse error
-        setError(`Nothing found for city "${location}", please check the spelling`);
+        setError(`Nothing found for city "${location}", please check spelling`);
         return;
       }
   
@@ -51,15 +60,15 @@ function App() {
         <input
           type="text"
           value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          onChange={handleInputChange}
           placeholder="Enter location..."
           className="location-input"
         />
         <button onClick={handleSubmit} className="submit-button">
           Get Weather
         </button>
-          {error && <p className="error-message">{error}</p>}
       </div>
+      {error && <p className="error-message">{error}</p>}
 
       {openWeatherTemp !== null && weatherApiTemp !== null && (
         <div className="results">
