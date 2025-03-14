@@ -36,19 +36,18 @@ function App() {
   
       if (!response.ok) {
         // If response is not OK, try to extract error message from backend
-        const errorData = await response.json().catch(() => ({})); // Prevents JSON parse error
         setError(`Nothing found for city "${location}", please check spelling`);
         return;
       }
   
       const data = await response.json();
-  
+
       setOpenWeatherTemp(data.openweather_temp.toFixed(1));
       setWeatherApiTemp(data.weatherapi_temp.toFixed(1));
       setAverageTemp(((data.openweather_temp + data.weatherapi_temp) / 2).toFixed(1));
       setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp).toFixed(1));
     } catch (error) {
-      setError("Error fetching data. Please try again.");
+      setError("Unable to connect to the weather service. Please try again later.");
     }
   };
 
