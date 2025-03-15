@@ -1,0 +1,54 @@
+name: Run Frontend & Backend Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Backend checks
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm test
+
+      - name: Run backend linting
+        run: |
+          cd backend
+          npm run lint || true # Add lint script to backend/package.json
+
+      # Frontend checks
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm test
+
+      - name: Run frontend linting
+        run: |
+          cd frontend
+          npm run lint
