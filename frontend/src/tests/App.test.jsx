@@ -3,17 +3,18 @@ import { render, screen, fireEvent, waitFor, act, within } from "@testing-librar
 import App from "../App";
 
 // Mocking the fetch API call
-global.fetch = jest.fn((url) => {
-  return Promise.resolve({
-    ok: !url.includes("UnknownCity123"), // Simulates error to unkonwn city
+global.fetch = jest.fn((url) => 
+  Promise.resolve({
+    ok: !url.includes("UnknownCity123"), // Simulate error for unknown city
     json: () =>
       Promise.resolve(
         url.includes("UnknownCity123")
-          ? { error: "Nothing found for city London, please check spelling" }
-          : { location: "London", openweather_temp: 12.0, weatherapi_temp: 14.0 }
+          ? { error: `Nothing found for city "UnknownCity123", please check spelling` }
+          : { openweather_temp: 12.0, weatherapi_temp: 14.0 }
       ),
-  });
-});
+  })
+);
+
 
 test("allows user to enter location", () => {
   render(<App />);
@@ -157,7 +158,9 @@ test("shows error if the entered location is not found", async () => {
     fireEvent.click(buttonElement);
   });
 
-  expect(await screen.findByText(new RegExp(`Nothing found for city "${"UnknownCity123"}", please check spelling`))).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(new RegExp(`Nothing found for city "UnknownCity123", please check spelling`))).toBeInTheDocument();
+  });  
 
 });
 

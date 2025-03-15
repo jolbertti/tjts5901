@@ -2,8 +2,6 @@ import React from "react";
 import { useState } from 'react';
 import './App.css';
 
-
-
 function App() {
   const [location, setLocation] = useState('');
   const [openWeatherTemp, setOpenWeatherTemp] = useState(null);
@@ -12,50 +10,65 @@ function App() {
   const [tempDifference, setTempDifference] = useState(null);
   const [error, setError] = useState("");
 
+  // Handles user input in the search box
   const handleInputChange = (e) => {
     setLocation(e.target.value);
-    setError(""); // Clear error when user types a new location
-    setOpenWeatherTemp(null); // Clear previous results
+    setError(""); // Clear previous error messages when typing a new location
+    setOpenWeatherTemp(null); // Reset previous results
     setWeatherApiTemp(null);
     setAverageTemp(null);
     setTempDifference(null);
   };
-  
+
+  // Handles form submission when user clicks "Get Weather"
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!location) {
       setError("Location is required");
       return;
     }
-  
-    setError(""); // Deletes error message if input is given
-  
+
+    setError(""); // Clear any previous error message before making the API request
+
     try {
       const response = await fetch(`http://localhost:5000/temperature?city=${location}`);
-  
-      if (!response.ok) {
-        // If response is not OK, try to extract error message from backend
-        const errorData = await response.json().catch(() => ({})); // Prevents JSON parse error
-        setError(`Nothing found for city "${location}", please check spelling`);
-        return;
+
+      let errorData = {};
+      try {
+        errorData = await response.json();
+      } catch (err) {
+        console.error("Error parsing JSON response:", err);
       }
-  
-      const data = await response.json();
-  
-      setOpenWeatherTemp(data.openweather_temp.toFixed(1));
-      setWeatherApiTemp(data.weatherapi_temp.toFixed(1));
-      setAverageTemp(((data.openweather_temp + data.weatherapi_temp) / 2).toFixed(1));
-      setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp).toFixed(1));
+
+      // Check for different error types
+      if (response.status === 404) {
+        // City not found case
+        setError(errorData.error || `Nothing found for city "${location}", please check spelling`);
+      } else if (response.status === 500) {
+        // Backend error case
+        setError("Unable to connect to the weather service. Please try again later.");
+      } else if (!response.ok) {
+        // Other unexpected errors
+        setError(errorData.error || "Unexpected error occurred. Please try again.");
+      } else {
+        // Successfully received data, update state
+        const data = errorData;
+        setOpenWeatherTemp(data.openweather_temp.toFixed(1));
+        setWeatherApiTemp(data.weatherapi_temp.toFixed(1));
+        setAverageTemp(((data.openweather_temp + data.weatherapi_temp) / 2).toFixed(1));
+        setTempDifference(Math.abs(data.openweather_temp - data.weatherapi_temp).toFixed(1));
+      }
     } catch (error) {
-      setError("Error fetching data. Please try again.");
+      // Handles network errors or when the backend is completely unavailable
+      setError("Unable to connect to the weather service. Please try again later.");
     }
-  };
+};
 
   return (
     <div className="container">
       <h1>Weather API Comparison</h1>
-      
+
       <div className="search-section">
         <input
           type="text"
@@ -70,8 +83,9 @@ function App() {
       </div>
       {error && <p className="error-message">{error}</p>}
 
+      {/* Display results only if both APIs return a valid temperature */}
       {openWeatherTemp !== null && weatherApiTemp !== null && (
-        <div className="results">
+        <div className="results" role="region" aria-label={`Weather Comparison for: ${location}`}>
           <h2>Weather Comparison for: {location}</h2>
           <p><strong>OpenWeatherMap Temperature:</strong> {openWeatherTemp}°C</p>
           <p><strong>WeatherAPI Temperature:</strong> {weatherApiTemp}°C</p>
