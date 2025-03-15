@@ -1,0 +1,41 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important for generating release notes
+          
+      - name: Generate release notes
+        id: generate_notes
+        uses: github-script@v7
+        with:
+          script: |
+            const commits = await github.rest.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 10
+            });
+            
+            const notes = commits.data
+              .map(commit => `- ${commit.commit.message}`)
+              .join('\n');
+            
+            return notes;
+            
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.generate_notes.outputs.result }}
+          draft: false
+          prerelease: false
