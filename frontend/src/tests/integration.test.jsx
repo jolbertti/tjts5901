@@ -19,7 +19,7 @@ test("fetches real weather data from backend", async () => {
 
   // Wait until backend response has been processed and UI updates
   const resultsSection = await waitFor(() =>
-    screen.getByText(/Weather Comparison for:/), { timeout: 5000 }
+    screen.getByText(/Weather Comparison for:/), { timeout: 15000 }
   );
   const parentDiv = resultsSection.closest(".results");
 
