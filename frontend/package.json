@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest",
-    "test:integration": "jest src/tests/integration.test.jsx"
+    "test:integration": "jest src/tests/integration.test.jsx",
+    "test:bdd": "jest bdd.test.jsx"
   },
   "dependencies": {
     "react": "^19.0.0",
