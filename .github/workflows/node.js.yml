@@ -43,3 +43,5 @@ jobs:
         run: |
           cd frontend
           npm test
+          npm test:integration
+          npm test:bdd
