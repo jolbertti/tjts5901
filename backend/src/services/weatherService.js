@@ -4,15 +4,29 @@ const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 const WEATHERAPI_KEY = process.env.WEATHERAPI_KEY;
 
 async function getOpenWeatherTemp(city) {
-    const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${OPENWEATHER_API_KEY}&units=metric`;
-    const response = await axios.get(url);
-    return response.data.main.temp;
+    try {
+        const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${OPENWEATHER_API_KEY}&units=metric`;
+        const response = await axios.get(url);
+        return response.data.main.temp;
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            return null; // city not found
+        }
+        throw error; // Autre erreur (ex: problème de connexion)
+    }
 }
 
 async function getWeatherApiTemp(city) {
-    const url = `http://api.weatherapi.com/v1/current.json?key=${WEATHERAPI_KEY}&q=${city}`;
-    const response = await axios.get(url);
-    return response.data.current.temp_c;
+    try {
+        const url = `http://api.weatherapi.com/v1/current.json?key=${WEATHERAPI_KEY}&q=${city}`;
+        const response = await axios.get(url);
+        return response.data.current.temp_c;
+    } catch (error) {
+        if (error.response && error.response.status === 400) {
+            return null; // WeatherAPI retourne 400 pour ville non trouvée
+        }
+        throw error;
+    }
 }
 
 module.exports = { getOpenWeatherTemp, getWeatherApiTemp };
