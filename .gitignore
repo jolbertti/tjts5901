@@ -28,6 +28,26 @@ backend/.env
 *.sln
 *.sw?
 
-# Terraform
+# Terraform files
 .terraform/
+*.tfstate
+*.tfstate.*
 .terraform.lock.hcl
+
+secrets.yaml
+
+# Dependency directories
+/vendor/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Minikube-specific files
+.minikube/
+
+# Kubernetes config
+~/.kube/
