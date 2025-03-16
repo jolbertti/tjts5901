@@ -6,6 +6,7 @@ global.fetch = fetch;
 
 
 test("fetches real weather data from backend", async () => {
+  jest.setTimeout(15000);
   render(<App />);
 
   // Simulate user writing city and clicking button
