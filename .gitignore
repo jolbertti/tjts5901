@@ -33,8 +33,9 @@ backend/.env
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+~/terraform.tfvars
 
-secrets.yaml
+~/secrets.yaml
 
 # Dependency directories
 /vendor/
