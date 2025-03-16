@@ -2,6 +2,29 @@ provider "kubernetes" {
   config_path = "~/.kube/config"
 }
 
+resource "kubernetes_secret" "weather_api_keys" {
+  metadata {
+    name = "weather-api-secrets"
+  }
+
+  data = {
+    OPENWEATHER_API_KEY = base64encode(var.OPENWEATHER_API_KEY)
+    WEATHERAPI_KEY      = base64encode(var.WEATHERAPI_KEY)
+  }
+
+  type = "Opaque"
+}
+
+variable "OPENWEATHER_API_KEY" {
+  description = "API key for OpenWeatherMap"
+  type        = string
+}
+
+variable "WEATHERAPI_KEY" {
+  description = "API key for WeatherAPI"
+  type        = string
+}
+
 # --- Backend Deployment ---
 resource "kubernetes_deployment" "weather_backend" {
   metadata {
@@ -30,13 +53,23 @@ resource "kubernetes_deployment" "weather_backend" {
           }
 
           env {
-            name  = "OPENWEATHER_API_KEY"
-            value = "1382269363d5e9b571fee8403555000a"
+            name = "OPENWEATHER_API_KEY"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret.weather_api_keys.metadata[0].name
+                key  = "OPENWEATHER_API_KEY"
+              }
+            }
           }
 
           env {
-            name  = "WEATHERAPI_KEY"
-            value = "f752214538ea4fddadd164152252002"
+            name = "WEATHERAPI_KEY"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret.weather_api_keys.metadata[0].name
+                key  = "WEATHERAPI_KEY"
+              }
+            }
           }
 
           resources {

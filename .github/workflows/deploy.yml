@@ -1,0 +1,41 @@
+name: Deploy to Minikube
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Minikube
+        uses: medyagh/setup-minikube@v0.0.14
+        with:
+          driver: docker
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > ~/.kube/config
+          kubectl cluster-info
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: |
+          export TF_VAR_openweather_api_key="${{ secrets.OPENWEATHER_API_KEY }}"
+          export TF_VAR_weatherapi_api_key="${{ secrets.WEATHERAPI_API_KEY }}"
+          terraform apply -auto-approve
+
+      - name: Verify Deployment
+        run: |
+          kubectl get pods
+          kubectl get services
