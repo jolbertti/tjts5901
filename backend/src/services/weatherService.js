@@ -12,7 +12,7 @@ async function getOpenWeatherTemp(city) {
         if (error.response && error.response.status === 404) {
             return null; // city not found
         }
-        throw error; // Autre erreur (ex: problème de connexion)
+        throw error; // other error
     }
 }
 
@@ -23,7 +23,7 @@ async function getWeatherApiTemp(city) {
         return response.data.current.temp_c;
     } catch (error) {
         if (error.response && error.response.status === 400) {
-            return null; // WeatherAPI retourne 400 pour ville non trouvée
+            return null; // city not found
         }
         throw error;
     }
