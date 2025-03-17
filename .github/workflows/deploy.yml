@@ -1,0 +1,44 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main # or whatever branch you want to trigger the deployment
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up Kubernetes context using Kubeconfig (ensure Kubeconfig is set)
+      - name: Set up Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      # Set up Terraform if you're using it to deploy
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.4
+
+      # Initialize Terraform and apply configuration
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      # Alternatively, if you're deploying manually to Kubernetes:
+      # Deploy using kubectl, Helm, or other methods
+      - name: Deploy to Kubernetes
+        env:
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          WEATHERAPI_KEY: ${{ secrets.WEATHERAPI_KEY }}
+        run: |
+          kubectl apply -f backend-deployment.yaml
+          kubectl apply -f frontend-deployment.yaml

@@ -21,9 +21,15 @@ spec:
             - containerPort: 5000
           env:
             - name: OPENWEATHER_API_KEY
-              value: "1382269363d5e9b571fee8403555000a"
+              valueFrom:
+                secretKeyRef:
+                  name: weather-api-secrets
+                  key: OPENWEATHER_API_KEY
             - name: WEATHERAPI_KEY
-              value: "f752214538ea4fddadd164152252002"
+              valueFrom:
+                secretKeyRef:
+                  name: weather-api-secrets
+                  key: WEATHERAPI_KEY
           resources:
             requests:
               memory: "128Mi"
@@ -31,3 +37,17 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      nodePort: 30003
+  type: LoadBalancer
