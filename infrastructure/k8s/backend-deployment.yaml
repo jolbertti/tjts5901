@@ -30,8 +30,6 @@ spec:
                 secretKeyRef:
                   name: weather-api-secrets
                   key: WEATHERAPI_KEY
-            - name: NODE_ENV
-              value: "production"
           resources:
             requests:
               memory: "128Mi"
@@ -47,8 +45,9 @@ metadata:
 spec:
   selector:
     app: backend
+    type: LoadBalancer
   ports:
     - protocol: TCP
       port: 5000
       targetPort: 5000
-  type: ClusterIP
+      nodePort: 30001

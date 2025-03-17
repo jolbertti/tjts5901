@@ -1,41 +1,44 @@
-name: Deploy to Minikube
+name: Deploy to Kubernetes
 
 on:
   push:
     branches:
-      - main
+      - main # or whatever branch you want to trigger the deployment
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
+      # Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
-      - name: Setup Minikube
-        uses: medyagh/setup-minikube@v0.0.14
-        with:
-          driver: docker
-
-      - name: Configure kubectl
+      # Set up Kubernetes context using Kubeconfig (ensure Kubeconfig is set)
+      - name: Set up Kubeconfig
         run: |
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > ~/.kube/config
-          kubectl cluster-info
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      # Set up Terraform if you're using it to deploy
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.4
 
+      # Initialize Terraform and apply configuration
       - name: Terraform Init
         run: terraform init
 
       - name: Terraform Apply
-        run: |
-          export TF_VAR_openweather_api_key="${{ secrets.OPENWEATHER_API_KEY }}"
-          export TF_VAR_weatherapi_api_key="${{ secrets.WEATHERAPI_API_KEY }}"
-          terraform apply -auto-approve
+        run: terraform apply -auto-approve
 
-      - name: Verify Deployment
+      # Alternatively, if you're deploying manually to Kubernetes:
+      # Deploy using kubectl, Helm, or other methods
+      - name: Deploy to Kubernetes
+        env:
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          WEATHERAPI_KEY: ${{ secrets.WEATHERAPI_KEY }}
         run: |
-          kubectl get pods
-          kubectl get services
+          kubectl apply -f backend-deployment.yaml
+          kubectl apply -f frontend-deployment.yaml
