@@ -31,12 +31,13 @@ resource "kubernetes_deployment" "weather_backend" {
 
           env {
             name  = "OPENWEATHER_API_KEY"
-            value = "1382269363d5e9b571fee8403555000a"
+            value = var.OPENWEATHER_API_KEY
+            
           }
 
           env {
             name  = "WEATHERAPI_KEY"
-            value = "f752214538ea4fddadd164152252002"
+            value = var.WEATHERAPI_KEY
           }
 
           resources {
