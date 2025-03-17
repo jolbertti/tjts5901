@@ -1,4 +1,4 @@
-kubernetes" {
+provider "kubernetes" {
   config_path = "~/.kube/config"
 }
 
@@ -30,14 +30,23 @@ resource "kubernetes_deployment" "weather_backend" {
           }
 
           env {
-            name  = "OPENWEATHER_API_KEY"
-            value = var.OPENWEATHER_API_KEY
-            
+            name = "OPENWEATHER_API_KEY"
+            value_from {
+              secret_key_ref {
+                name = "weather-api-secrets"
+                key  = "OPENWEATHER_API_KEY"
+              }
+            }
           }
-
+          
           env {
-            name  = "WEATHERAPI_KEY"
-            value = var.WEATHERAPI_KEY
+            name = "WEATHERAPI_KEY"
+            value_from {
+              secret_key_ref {
+              name = "weather-api-secrets"
+              key  = "WEATHERAPI_KEY"
+              }
+            }
           }
 
           resources {
