@@ -32,7 +32,7 @@ function App() {
     setError(""); // Clear any previous error message before making the API request
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/temperature?city=${location}`);
+      const response = await fetch(`http://127.0.0.1:65517/temperature?city=${location}`);
 
       let errorData = {};
       try {
